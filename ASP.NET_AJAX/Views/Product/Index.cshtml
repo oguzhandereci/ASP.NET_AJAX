@@ -1,0 +1,277 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<div class="container">
+    <br />
+    <br />
+    <div class="row">
+        <form class="form-horizontal" id="frmAdd">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="txtProductName" class="col-sm-4 control-label">Product Name</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtProductName" placeholder="Product Name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cmbCategory" class="col-sm-4 control-label">Category Name</label>
+                    <div class="col-sm-8">
+                        <select id="cmbCategory" class="form-control">
+                            <option value="1">a</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="txtUnitPrice" class="col-sm-4 control-label">Unit Price</label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" min="0" max="9999" step=".01"
+                               id="txtUnitPrice" placeholder="Unit Price">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txtQuantityPerUnit" class="col-sm-4 control-label">Quantity Per Unit</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtQuantityPerUnit" placeholder="Quantity Per Unit">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-8">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="cbDiscontinued"> Discontinued
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-6">
+                        <button type="submit" class="btn btn-info btn-block">Add Product</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <form id="frmUpdate" class="form-control" style="display: none">
+            <input type="hidden" class="form-control" id="txtProductId2">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="txtProductName" class="col-sm-4 control-label">Product Name</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtProductName2" placeholder="Product Name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="cmbCategory" class="col-sm-4 control-label">Category Name</label>
+                    <div class="col-sm-8">
+                        <select id="cmbCategory2" class="form-control">
+                            <option value="1">a</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="txtUnitPrice" class="col-sm-4 control-label">Unit Price</label>
+                    <div class="col-sm-8">
+                        <input type="number" class="form-control" min="0" max="9999" step=".01"
+                               id="txtUnitPrice2" placeholder="Unit Price">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="txtQuantityPerUnit" class="col-sm-4 control-label">Quantity Per Unit</label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="txtQuantityPerUnit2" placeholder="Quantity Per Unit">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-8">
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" id="cbDiscontinued2"> Discontinued
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <div class="col-sm-offset-4 col-sm-6">
+                        <button type="submit" class="btn btn-info btn-block">Update Product</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="resultdiv" class="row">
+        <div class="col-md-12">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Product Name</th>
+                        <th>Category Name</th>
+                        <th>Unit Price</th>
+                        <th>Quantity Per Unit</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="resultbody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $(function() {
+            function init() {
+                $.ajax({
+                    url: "@Url.Action("GetAllCategories", "Product")",
+                    method: "get",
+                    dataType: "json"
+                }).done(function(ev) {
+                    if (ev.success) {
+                        $("#cmbCategory").empty();
+                        $("#cmbCategory").append($("<option></option>")
+                            .attr("value", 0)
+                            .text("Kategorisi yok"));
+                        $.each(ev.data,
+                            function(key, value) {
+                                $("#cmbCategory").append($("<option></option>")
+                                    .attr("value", value.CategoryID)
+                                    .text(value.CategoryName));
+                            });
+
+                        $("#cmbCategory2").empty();
+                        $("#cmbCategory2").append($("<option></option>")
+                            .attr("value", 0)
+                            .text("Kategorisi yok"));
+                        $.each(ev.data,
+                            function (key, value) {
+                                $("#cmbCategory2").append($("<option></option>")
+                                    .attr("value", value.CategoryID)
+                                    .text(value.CategoryName));
+                            });
+                    }
+                });
+
+                $.ajax({
+                    url: "@Url.Action("GetAllProducts", "Product")",
+                    method: "get",
+                    dataType: "json"
+                }).done(function(ev) {
+                    if (ev.success) {
+                        renderdata(ev.data);
+                        $("#resultbody").show(600);
+                    }
+                });
+            }
+
+            function renderdata(data) {
+                if (data && data.length === 0) {
+                    $("#resultdiv").hide();
+                    return;
+                }
+                $("#resultdiv").show(400);
+                $("#resultbody").empty();
+                $.each(data,
+                    function (key, value) {
+                        var btnSil = document.createElement("input");
+                        var btnGuncelle = document.createElement("input");
+
+                        $("<tr></tr>")
+                            .append($("<th></th>").text(key + 1))
+                            .append($("<td></td>").text(value.ProductName))
+                            .append($("<td></td>").text(value.CategoryName))
+                            .append($("<td></td>").text(value.UnitPriceFormatted))
+                            .append($("<td></td>").text(value.QuantityPerUnit))
+                            .append($("<td></td>").append([
+                                    $(btnSil).attr({
+                                "type": "button",
+                                "class": "btn btn-danger",
+                                "value": "Delete",
+                                "name": value.ProductID
+                                })
+                                    .on("click", function () {
+                                        var id = this.name;
+                                        $.ajax({
+                                            url: "@Url.Action("Delete", "Product")",
+                                            method: "post",
+                                            data: {id:id},
+                                            dataType: "json"
+                                        }).done(function(ev) {
+                                            if (ev.success) {
+                                                alert(ev.message);
+                                                init();
+                                            }
+                                        });
+                                        })
+                                    ,
+                                    ($(btnGuncelle)).attr({
+                                        "type": "button",
+                                        "class": "btn btn-warning",
+                                        "value": "Update",
+                                        "name": value.ProductID
+                                    })
+                                    .on("click", function () {
+                                        var id = this.name;
+                                        var satir = $(this).parent().parent()[0].childNodes;
+                                        var productName = satir[1].innerText;
+                                        var categoryName = satir[2].innerText;
+                                        var unitPrice = satir[3].innerText;
+                                        var quantityPerUnit = satir[4].innerText;
+
+                                        init();
+                                        $("#txtProductId2").val(id);
+                                        $("#txtProductName2").val(productName);
+                                        $("#cmbCategory option:selected").val(categoryName);
+                                        $("#txtUnitPrice2").html(unitPrice);
+                                        $("#txtQuantityPerUnit2").val(quantityPerUnit);
+                                        $("#frmAdd").hide();
+                                        $("#frmUpdate").show(400);
+                                    })
+                                ])
+                                
+                            )
+                            .appendTo($("#resultbody"));
+                    });
+            }
+
+            $("#frmUpdate").submit(function(ev) {
+                ev.preventDefault();
+                var data = {
+                    ProductID: $("#txtProductId2").val(),
+                    ProductName: $("#txtProductName2").val(),
+                    CategoryID: $("#cmbCategory2 option:selected").val(),
+                    UnitPrice: $("#txtUnitPrice2").val().replace(".", ","),
+                    QuantityPerUnit: $("#txtQuantityPerUnit2").val()
+                }
+                $.ajax({
+                    url: "@Url.Action("Update","Product")",
+                    data: data,
+                    method: "post",
+                    dataType: "json"
+                }).done(function(e) {
+                    if (e.success) {
+                        renderdata(e.data);
+                        alert(e.message);
+                        init();
+                        $("#frmUpdate").hide();
+                        $("#frmAdd").show(400);
+                    }
+                });
+            });
+
+            init();
+        });
+
+
+    </script>
+}
+
